@@ -11,6 +11,10 @@ class Task(models.Model):
     board = models.ForeignKey(Board, default=1, related_name="tasks", on_delete=models.CASCADE)
     title = models.CharField(max_length=120)
     description = models.TextField()
+    order = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ["order"]

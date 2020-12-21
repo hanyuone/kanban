@@ -32,13 +32,27 @@ class App extends React.Component {
       newOrder.splice(source.index, 1);
       newOrder.splice(destination.index, 0, parseInt(draggableId));
 
-      const newBoard = {
-        ...currentBoard,
-        tasks: newOrder
-      };
+      // Updates it locally so it seems smooth
+      let newBoards = this.state.boards.slice();
+      newBoards[boardIndex].tasks = newOrder;
 
-      axios.put(`api/boards/${source.droppableId}/`, newBoard)
-        .then(this.refreshList());
+      this.setState({
+        boards: newBoards
+      });
+
+      // Creates requests to update serverside
+      let requests = [];
+
+      for (let i = 0; i < newOrder.length; i++) {
+        const current = newOrder[i];
+        const taskIndex = this.state.tasks.findIndex(task => task.id === current);
+        const currentTask = this.state.tasks[taskIndex];
+        currentTask.order = i;
+
+        requests.push(axios.put(`/api/tasks/${current}/`, currentTask));
+      }
+
+      axios.all(requests).then(_ => this.refreshList());
     }
 
     refreshList = () => {
